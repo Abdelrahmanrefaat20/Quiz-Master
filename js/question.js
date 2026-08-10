@@ -308,11 +308,11 @@ export default class Question {
     const selectedAnswer = choiceElement.dataset.answer;
 
     if (selectedAnswer.toLowerCase() === this.correctAnswer.toLowerCase()) {
-      choiceElement.classList.add("correct");
+      choiceElement.classList.add("correct" , "animate__animated" ,"animate__shakeY");
       this.quiz.incrementScore();
       this.playSound.playCorrectSound();
     } else {
-      choiceElement.classList.add("wrong");
+      choiceElement.classList.add("wrong" , "animate__animated" ,"animate__flipInX");
       this.highlightCorrectAnswer();
       this.playSound.playIncorrectSound();
     }
