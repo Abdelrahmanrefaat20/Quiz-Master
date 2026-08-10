@@ -1,5 +1,8 @@
+import Sound from './sound.js';
 /**
+ * 
 import Question from './question';
+import Sound from './sound';
  * ============================================
  * QUESTION CLASS
  * ============================================
@@ -71,6 +74,7 @@ export default class Question {
     this.quiz = quiz;
     this.container = container;
     this.onQuizEnd = onQuizEnd;
+    this.playSound = new Sound();
 
     this.questionData = quiz.getCurrentQuestion();
     this.index = quiz.currentQuestionIndex;
@@ -106,17 +110,17 @@ export default class Question {
   // 2. Shuffle using Fisher-Yates algorithm
   // 3. Return shuffled array
 
- shuffleAnswers() {
-  const answers = [...this.wrongAnswers, this.correctAnswer];
+  shuffleAnswers() {
+    const answers = [...this.wrongAnswers, this.correctAnswer];
 
-  for (let i = answers.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    for (let i = answers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
 
-    [answers[i], answers[j]] = [answers[j], answers[i]];
+      [answers[i], answers[j]] = [answers[j], answers[i]];
+    }
+
+    return answers;
   }
-
-  return answers;
-}
 
 
   // TODO: Create getProgress() method
@@ -242,10 +246,12 @@ export default class Question {
       timerValue.textContent = this.timeRemaining
       if (this.timeRemaining <= 10) {
         timerBadge.classList.add("warning");
+        this.playSound.playTimeUpSound();
       }
       if (this.timeRemaining <= 0) {
         this.stopTimer();
         this.handleTimeUp();
+        this.playSound.stopTimeUpSound();
       }
     }, 1000)
 
@@ -304,9 +310,11 @@ export default class Question {
     if (selectedAnswer.toLowerCase() === this.correctAnswer.toLowerCase()) {
       choiceElement.classList.add("correct");
       this.quiz.incrementScore();
+      this.playSound.playCorrectSound();
     } else {
       choiceElement.classList.add("wrong");
-     this.highlightCorrectAnswer(); 
+      this.highlightCorrectAnswer();
+      this.playSound.playIncorrectSound();
     }
     const buttons = document.querySelectorAll(".answer-btn");
     buttons.forEach(button => {
@@ -337,21 +345,22 @@ export default class Question {
   //    Also add click listener to Play Again button
   getNextQuestion() {
     if (this.quiz.nextQuestion() == true) {
-        const question = new Question(
-            this.quiz,
-            this.container,
-            this.onQuizEnd
-        );
-        question.displayQuestion();
+      const question = new Question(
+        this.quiz,
+        this.container,
+        this.onQuizEnd
+      );
+      question.displayQuestion();
+      this.playSound.stopTimeUpSound();
     } else {
-        this.container.innerHTML = this.quiz.endQuiz(); 
+      this.container.innerHTML = this.quiz.endQuiz();
 
-        const playAgainBtn = document.querySelector(".play-again-btn");
-        if (playAgainBtn) {
-            playAgainBtn.addEventListener("click", this.onQuizEnd);
-        }
+      const playAgainBtn = document.querySelector(".play-again-btn");
+      if (playAgainBtn) {
+        playAgainBtn.addEventListener("click", this.onQuizEnd);
+      }
     }
-}
+  }
 
   // TODO: Create animateQuestion(duration) method
   // 1. Wait for 1500ms (transition delay)
